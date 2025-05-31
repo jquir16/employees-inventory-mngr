@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DatabaseToolSources">
+    <data-source name="postgresDB" uuid="60f34016-0ada-4be8-a2e7-b566a398b870" type="POSTGRES">
+      <base-info connect-type="DB_DEFAULT" product="PostgreSQL" version="17.5 (Debian 17.5-1.pgdg120+1)" major-version="17" minor-version="5" jdbc-name="PostgreSQL JDBC Driver" jdbc-version="42.7.3" jdbc-major-version="42" jdbc-minor-version="7" />
+      <user-name>postgres</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node negative="1">
+            <node kind="database" qname="postgres" operator="@">
+              <node kind="schema">
+                <name qname="information_schema" />
+                <name qname="pg_catalog" />
+                <name qname="pg_toast" />
+                <name qname="public" />
+              </node>
+            </node>
+            <node kind="database" qname="user-onboarding-db" operator="@">
+              <node kind="schema">
+                <name qname="information_schema" />
+                <name qname="pg_catalog" />
+                <name qname="pg_toast" />
+                <name qname="public" />
+              </node>
+            </node>
+          </node>
+        </introspection-scope>
+      </schema-mapping>
+      <choose-schema-mapping>
+        <introspection-scope>
+          <node negative="1">
+            <node kind="database" qname="postgres" operator="@">
+              <node kind="schema">
+                <name qname="public" />
+              </node>
+            </node>
+            <node kind="database" qname="user-onboarding-db" operator="@">
+              <node kind="schema">
+                <name qname="public" />
+              </node>
+            </node>
+          </node>
+        </introspection-scope>
+      </choose-schema-mapping>
+      <use-database negative="1" kind="database" qname="user-onboarding-db" operator="@">
+        <node kind="schema">
+          <name qname="public" />
+        </node>
+      </use-database>
+      <url>jdbc:postgresql://localhost:15432/user-onboarding-db</url>
+      <remarks />
+      <vm-options />
+      <driver-info id="postgresql" />
+      <ssh-properties enabled="false" />
+      <ssl-config enabled="false">
+        <uuid />
+        <caFile />
+        <clientCertificateFile />
+        <clientKeyFile />
+        <sslMode>REQUIRE</sslMode>
+      </ssl-config>
+    </data-source>
+  </component>
+</project>
