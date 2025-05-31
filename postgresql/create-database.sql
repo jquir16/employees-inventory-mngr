@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY UNIQUE, 
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     role VARCHAR(50) NOT NULL CHECK (role IN ('DEV', 'QA', 'PM', 'HR')),
@@ -22,5 +22,4 @@ CREATE TABLE IF NOT EXISTS computer_assignments (
     assigned_at TIMESTAMP DEFAULT NOW()
 );
 
-INSERT INTO users (name, email, role, status) VALUES 
-('Admin User', 'admin@company.com', 'HR', 'APPROVED');
+INSERT INTO users (name, email, role, status) VALUES ('Admin User', 'admin@company.com', 'HR', 'APPROVED');
