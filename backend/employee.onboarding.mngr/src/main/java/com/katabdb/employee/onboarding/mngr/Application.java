@@ -1,5 +1,6 @@
 package com.katabdb.employee.onboarding.mngr;
 
+import com.katabdb.employee.onboarding.mngr.services.implementation.UserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
