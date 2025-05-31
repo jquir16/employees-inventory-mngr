@@ -1,0 +1,9 @@
+services:
+  database:
+    build: ./postgresql
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: user-onboarding-db
+    ports:
+      - "15432:5432"
