@@ -1,6 +1,6 @@
 package com.katabdb.employee.onboarding.mngr.controller;
 
-import com.katabdb.employee.onboarding.mngr.domain.UserEntity;
+import com.katabdb.employee.onboarding.mngr.domain.entities.UserEntity;
 import com.katabdb.employee.onboarding.mngr.services.implementation.UserService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
