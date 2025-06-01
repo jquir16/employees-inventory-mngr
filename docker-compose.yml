@@ -15,6 +15,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/user-onboarding-db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: admin
+      JWT_SECRET: A5SAdg8gDrZqHkzLlIPXPbmkeqQ5vHNZxsKOpVqReSJPNhJJtNZyLIdUpc1XZF6m
     depends_on:
       - database
     ports:

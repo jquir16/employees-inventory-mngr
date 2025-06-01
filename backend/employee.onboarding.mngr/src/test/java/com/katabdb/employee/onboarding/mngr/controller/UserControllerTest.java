@@ -1,7 +1,10 @@
 package com.katabdb.employee.onboarding.mngr.controller;
 
-import com.katabdb.employee.onboarding.mngr.domain.UserEntity;
+import com.katabdb.employee.onboarding.mngr.domain.entities.UserEntity;
+import com.katabdb.employee.onboarding.mngr.repository.IAuthRepository;
+import com.katabdb.employee.onboarding.mngr.repository.IUserRepository;
 import com.katabdb.employee.onboarding.mngr.services.implementation.UserService;
+import com.katabdb.employee.onboarding.mngr.services.implementation.security.JWTService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,15 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JWTService jwtService;
+
+    @MockBean
+    private IAuthRepository authRepository;
+
+    @MockBean
+    private IUserRepository userRepository;
 
     @Test
     void getUserById_returnsUser() throws Exception {
