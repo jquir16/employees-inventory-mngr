@@ -10,6 +10,7 @@ import com.katabdb.employee.onboarding.mngr.repository.IAuthRepository;
 import com.katabdb.employee.onboarding.mngr.repository.IUserRepository;
 import com.katabdb.employee.onboarding.mngr.services.implementation.security.JWTService;
 import com.katabdb.employee.onboarding.mngr.services.implementation.security.PasswordService;
+import com.katabdb.employee.onboarding.mngr.services.interfaces.IAuthQueryService;
 import com.katabdb.employee.onboarding.mngr.validators.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,13 +23,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthService implements IAuthQueryService {
     private final IAuthRepository authRepository;
     private final IUserRepository userRepository;
     private final JWTService jwtService;
     private final PasswordService passwordService;
     private final AuthenticationManager authenticationManager;
 
+    @Override
     public TokenResponse register(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException("User already exists");
@@ -41,6 +43,7 @@ public class AuthService {
         return new TokenResponse(jwtToken, refreshToken);
     }
 
+    @Override
     public TokenResponse login(LoginUserRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -58,6 +61,7 @@ public class AuthService {
         return new TokenResponse(jwtToken, refreshToken);
     }
 
+    @Override
     public TokenResponse refreshToken(String header) {
         if (header == null || !header.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Invalid Bearer Token");
