@@ -40,12 +40,15 @@ class UserControllerTest {
     @MockBean
     private IUserRepository userRepository;
 
+    @MockBean
+    private com.katabdb.employee.onboarding.mngr.validators.formats.JWTValidator jwtValidator;
+
     @Test
     void getUserById_returnsUser() throws Exception {
         UserEntity user = new UserEntity();
         Mockito.when(userService.getUserById(anyInt())).thenReturn(user);
 
-        mockMvc.perform(get("/user").param("id", "1"))
+        mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk());
     }
 
