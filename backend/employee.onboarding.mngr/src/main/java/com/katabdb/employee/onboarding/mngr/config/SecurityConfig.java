@@ -79,12 +79,12 @@ public class SecurityConfig {
 
     private void logout(final String token) {
         if (token == null || !token.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new IllegalArgumentException("Invalid token format");
         }
 
         final String jwtToken = token.substring(7);
         final TokenEntity foundToken = authRepository.findByToken(jwtToken)
-                .orElseThrow(() -> new  IllegalArgumentException("Invalid Token"));
+                .orElseThrow(() -> new  IllegalArgumentException("token not found"));
 
         foundToken.setTokenStatus(TokenStatus.REVOKED);
         authRepository.save(foundToken);

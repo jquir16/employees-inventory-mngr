@@ -2,6 +2,7 @@ package com.katabdb.employee.onboarding.mngr.config;
 
 import com.katabdb.employee.onboarding.mngr.domain.entities.UserEntity;
 import com.katabdb.employee.onboarding.mngr.repository.IUserRepository;
+import com.katabdb.employee.onboarding.mngr.services.interfaces.IUserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,12 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class AppConfig {
 
-    private final IUserRepository userRepository;
+    private final IUserQueryService userQueryService;
 
     @Bean
     public UserDetailsService userDetailsService() {
         return email ->{
-            final UserEntity user = userRepository.findByEmail(email)
+            final UserEntity user = userQueryService.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getEmail())
