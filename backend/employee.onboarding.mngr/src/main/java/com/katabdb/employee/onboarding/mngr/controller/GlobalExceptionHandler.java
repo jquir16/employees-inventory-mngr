@@ -1,8 +1,8 @@
 package com.katabdb.employee.onboarding.mngr.controller;
 
 import com.katabdb.employee.onboarding.mngr.dto.exception.ApiError;
-import com.katabdb.employee.onboarding.mngr.validators.exception.InvalidCredentialsException;
-import com.katabdb.employee.onboarding.mngr.validators.exception.UserAlreadyExistsException;
+import com.katabdb.employee.onboarding.mngr.exception.InvalidCredentialsException;
+import com.katabdb.employee.onboarding.mngr.exception.UserAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,6 @@
 package com.katabdb.employee.onboarding.mngr.config;
 
-import com.katabdb.employee.onboarding.mngr.validators.formats.JWTValidator;
+import com.katabdb.employee.onboarding.mngr.validation.formats.JWTValidator;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
