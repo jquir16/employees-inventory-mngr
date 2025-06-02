@@ -5,6 +5,8 @@ import com.katabdb.employee.onboarding.mngr.repository.IAuthRepository;
 import com.katabdb.employee.onboarding.mngr.repository.IUserRepository;
 import com.katabdb.employee.onboarding.mngr.services.implementation.UserService;
 import com.katabdb.employee.onboarding.mngr.services.implementation.security.JWTService;
+import com.katabdb.employee.onboarding.mngr.validation.formats.JWTValidator;
+import com.katabdb.employee.onboarding.mngr.validation.mappers.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class UserControllerTest {
+class UserResponseControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -41,12 +43,12 @@ class UserControllerTest {
     private IUserRepository userRepository;
 
     @MockBean
-    private com.katabdb.employee.onboarding.mngr.validators.formats.JWTValidator jwtValidator;
+    private JWTValidator jwtValidator;
 
     @Test
     void getUserById_returnsUser() throws Exception {
         UserEntity user = new UserEntity();
-        Mockito.when(userService.getUserById(anyInt())).thenReturn(user);
+        Mockito.when(userService.getUserById(anyInt())).thenReturn(UserMapper.toResponse(user));
 
         mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk());
@@ -54,7 +56,13 @@ class UserControllerTest {
 
     @Test
     void getAllUsers_returnsList() throws Exception {
-        Mockito.when(userService.getAllUsers()).thenReturn(Arrays.asList(new UserEntity(), new UserEntity()));
+        UserEntity user1 = new UserEntity();
+        UserEntity user2 = new UserEntity();
+        var userResponses = Arrays.asList(
+                UserMapper.toResponse(user1),
+                UserMapper.toResponse(user2)
+        );
+        Mockito.when(userService.getAllUsers()).thenReturn(userResponses);
 
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())

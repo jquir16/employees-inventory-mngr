@@ -10,8 +10,8 @@ import com.katabdb.employee.onboarding.mngr.repository.IAuthRepository;
 import com.katabdb.employee.onboarding.mngr.repository.IUserRepository;
 import com.katabdb.employee.onboarding.mngr.services.implementation.security.JWTService;
 import com.katabdb.employee.onboarding.mngr.services.implementation.security.PasswordService;
-import com.katabdb.employee.onboarding.mngr.services.interfaces.IAuthQueryService;
-import com.katabdb.employee.onboarding.mngr.validators.exception.UserAlreadyExistsException;
+import com.katabdb.employee.onboarding.mngr.services.spec.IAuthQueryService;
+import com.katabdb.employee.onboarding.mngr.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -87,13 +87,13 @@ public class AuthService implements IAuthQueryService {
         return new TokenResponse(jwtToken, refreshToken);
     }
 
-    private UserEntity buildUserFromRequest(RegisterUserRequest request) {
+    public UserEntity buildUserFromRequest(RegisterUserRequest request) {
         return UserEntity.builder()
                 .name(request.name())
                 .email(request.email())
                 .password(passwordService.encodePassword(request.password()))
                 .role(request.role())
-                .created_at(new Date())
+                .createdAt(new Date())
                 .build();
     }
 

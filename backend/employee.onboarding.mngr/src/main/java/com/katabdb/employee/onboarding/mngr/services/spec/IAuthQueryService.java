@@ -1,4 +1,4 @@
-package com.katabdb.employee.onboarding.mngr.services.interfaces;
+package com.katabdb.employee.onboarding.mngr.services.spec;
 
 import com.katabdb.employee.onboarding.mngr.dto.auth.LoginUserRequest;
 import com.katabdb.employee.onboarding.mngr.dto.auth.RegisterUserRequest;

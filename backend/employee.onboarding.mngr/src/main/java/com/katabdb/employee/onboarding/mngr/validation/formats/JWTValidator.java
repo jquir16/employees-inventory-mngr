@@ -1,4 +1,4 @@
-package com.katabdb.employee.onboarding.mngr.validators.formats;
+package com.katabdb.employee.onboarding.mngr.validation.formats;
 
 import com.katabdb.employee.onboarding.mngr.domain.entities.TokenEntity;
 import com.katabdb.employee.onboarding.mngr.domain.entities.UserEntity;
