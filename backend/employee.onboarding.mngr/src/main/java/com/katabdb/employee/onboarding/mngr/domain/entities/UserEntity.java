@@ -29,7 +29,12 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     private UserStatus status;
-    private Date created_at;
+
+    @Column(name = "created_at")
+    private Date createdAt;
+
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     public Integer getId() {
         return id;
@@ -53,9 +58,5 @@ public class UserEntity {
 
     public UserStatus getStatus() {
         return status;
-    }
-
-    public Date getCreated_at() {
-        return created_at;
     }
 }

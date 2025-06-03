@@ -57,6 +57,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -79,12 +80,12 @@ public class SecurityConfig {
 
     private void logout(final String token) {
         if (token == null || !token.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new IllegalArgumentException("Invalid token format");
         }
 
         final String jwtToken = token.substring(7);
         final TokenEntity foundToken = authRepository.findByToken(jwtToken)
-                .orElseThrow(() -> new  IllegalArgumentException("Invalid Token"));
+                .orElseThrow(() -> new  IllegalArgumentException("token not found"));
 
         foundToken.setTokenStatus(TokenStatus.REVOKED);
         authRepository.save(foundToken);
@@ -94,8 +95,9 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE"));
-        configuration.addAllowedHeader("*");
+        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "*"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
