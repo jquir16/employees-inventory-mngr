@@ -8,6 +8,31 @@ const nextConfig: NextConfig = {
       value: 'cookie',
     },
   ],
+  reactStrictMode: true,
+  swcMinify: true,
+  images: {
+    domains: ['your-aws-s3-bucket-url.com'],
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/:path*',
+      },
+    ]
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  compiler: {
+    styledComponents: true,
+  },
+  experimental: {
+    scrollRestoration: true,
+  },
 }
 
 export default nextConfig;

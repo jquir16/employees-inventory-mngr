@@ -69,7 +69,7 @@ export function AccessRequestsTable({ className = '' }: { className?: string }) 
             accessorKey: 'userName',
             header: 'Usuario',
             cell: ({ row }) => {
-                const { data: userData, isLoading: isLoadingUser } = useUser(row.original.userId)
+                const { data: userData } = useUser(row.original.userId)
 
                 return (
                     <div>

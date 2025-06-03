@@ -3,16 +3,21 @@ package com.katabdb.employee.onboarding.mngr.controller;
 import com.katabdb.employee.onboarding.mngr.dto.exception.ApiError;
 import com.katabdb.employee.onboarding.mngr.exception.InvalidCredentialsException;
 import com.katabdb.employee.onboarding.mngr.exception.UserAlreadyExistsException;
+import org.hibernate.PropertyValueException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -72,5 +77,17 @@ public class GlobalExceptionHandler {
         logger.warn("405 Method Not Allowed: {}", message);
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(new ApiError(HttpStatus.METHOD_NOT_ALLOWED.value(), message));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "Error de integridad de datos";
+
+        if (ex.getCause() instanceof PropertyValueException) {
+            PropertyValueException pve = (PropertyValueException) ex.getCause();
+            message = "Campo requerido no proporcionado: " + pve.getPropertyName();
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError(HttpStatus.BAD_REQUEST.value(), message));
     }
 }

@@ -8,6 +8,13 @@ import { userStatusToColor } from '@/shared/lib/utils'
 
 const columns: ColumnDef<UserResponse>[] = [
     {
+        accessorKey: 'id',
+        header: 'ID',
+        cell: ({ row }) => (
+            <span className="text-sm text-gray-700">{row.original.id}</span>
+        ),
+    },
+    {
         accessorKey: 'name',
         header: 'Nombre',
         cell: ({ row }) => (
