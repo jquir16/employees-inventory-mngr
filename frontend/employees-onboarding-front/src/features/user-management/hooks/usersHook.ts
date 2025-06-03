@@ -1,6 +1,8 @@
-import { UserResponse } from "@/entities/user/userTypes"
-import { useQuery, UseQueryOptions } from "@tanstack/react-query"
-import { fetchAllUsers, getUserById } from "../api/usersApi"
+import { CreateUserRequest, UpdateUserRequest, UserResponse } from "@/entities/user/userTypes"
+import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from "@tanstack/react-query"
+import { fetchAllUsers, getUserById, updateUser } from "../api/usersApi"
+import { AuthResponse } from "@/entities/auth/authTypes"
+import { registerUser } from "@/features/auth/api/registerUserApi"
 
 export const userKeys = {
   all: ['users'] as const,
@@ -30,4 +32,22 @@ export const useUsers = (
     queryFn: fetchAllUsers,
     ...options,
   });
+}
+
+export const useRegisterUser = (
+  options?: UseMutationOptions<AuthResponse, Error, CreateUserRequest>
+) => {
+  return useMutation<AuthResponse, Error, CreateUserRequest>({
+    mutationFn: registerUser,
+    ...options,
+  })
+}
+
+export const useUpdateUser = (
+  options?: UseMutationOptions<UserResponse, Error, { id: number; data: UpdateUserRequest }>
+) => {
+  return useMutation<UserResponse, Error, { id: number; data: UpdateUserRequest }>({
+    mutationFn: ({ id, data }) => updateUser(id, data),
+    ...options,
+  })
 }

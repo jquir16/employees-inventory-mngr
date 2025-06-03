@@ -11,10 +11,10 @@ export const fetchAllUsers = async (): Promise<UserResponse[]> => {
   return response.data
 }
 
-export const updateAccessRequest = async (
+export const updateUser = async (
   id: number,
   data: UpdateUserRequest
 ): Promise<UserResponse> => {
-  const response = await axiosClient.put(`/access-requests/${id}`, data)
+  const response = await axiosClient.put(`/users/${id}`, data)
   return response.data
 }

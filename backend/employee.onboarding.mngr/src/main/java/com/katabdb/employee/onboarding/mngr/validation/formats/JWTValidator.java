@@ -3,6 +3,7 @@ package com.katabdb.employee.onboarding.mngr.validation.formats;
 import com.katabdb.employee.onboarding.mngr.domain.entities.TokenEntity;
 import com.katabdb.employee.onboarding.mngr.domain.entities.UserEntity;
 import com.katabdb.employee.onboarding.mngr.domain.enums.TokenStatus;
+import com.katabdb.employee.onboarding.mngr.domain.enums.UserStatus;
 import com.katabdb.employee.onboarding.mngr.repository.IAuthRepository;
 import com.katabdb.employee.onboarding.mngr.repository.IUserRepository;
 import com.katabdb.employee.onboarding.mngr.services.implementation.security.JWTService;
@@ -36,7 +37,7 @@ public class JWTValidator {
         if (tokenOpt.isEmpty() || isTokenInvalid(tokenOpt.get())) return;
 
         Optional<UserEntity> userOpt = userRepository.findByEmail(userEmail);
-        if (userOpt.isEmpty() || !jwtService.isTokenValid(jwtToken, userOpt.get())) return;
+        if (userOpt.isEmpty() || !jwtService.isTokenValid(jwtToken, userOpt.get()) || !userOpt.get().getStatus().equals(UserStatus.APPROVED)) return;
 
         setAuthentication(userEmail, request);
     }

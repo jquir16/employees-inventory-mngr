@@ -32,9 +32,6 @@ export const useAccessRequestForm = () => {
             .of(Yup.string().oneOf(SYSTEM_OPTIONS.map(opt => opt.label)))
             .min(1, 'Debes seleccionar al menos un sistema')
             .required('Se requiere al menos un sistema'),
-        justification: Yup.string()
-            .max(500, 'La justificación no puede exceder los 500 caracteres')
-            .notRequired()
     });
 
     const { mutate: createRequest, isPending: isCreating } = useCreateAccessRequest({
@@ -106,7 +103,6 @@ export const useAccessRequestForm = () => {
         if (isPM) {
             formik.setFieldValue('userId', '');
             formik.setFieldValue('systems', []);
-            formik.setFieldValue('justification', '');
         }
     }, [user?.id]);
 

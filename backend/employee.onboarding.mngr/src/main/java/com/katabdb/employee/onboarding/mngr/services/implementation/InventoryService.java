@@ -42,6 +42,7 @@ public class InventoryService implements IInventoryQueryService {
 
     @Override
     public InventoryResponse createInventoryItem(CreateInventoryRequest inventoryRequest) {
+        System.out.println(inventoryRequest);
         var inventoryItem = InventoryMapper.buildEntityFromRequest(inventoryRequest);
         inventoryRepository.save(inventoryItem);
         return InventoryMapper.buildRequestFromEntity(inventoryItem);

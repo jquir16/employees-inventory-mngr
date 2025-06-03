@@ -34,6 +34,3 @@ CREATE TABLE IF NOT EXISTS tokens (
     created_at TIMESTAMP DEFAULT NOW(),
     expires_at TIMESTAMP NOT NULL
 );
-
-INSERT INTO users (name, email, password, role, status)
-VALUES ('Admin User', 'admin@test.com', 'admin123', 'AC', 'APPROVED');
