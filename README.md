@@ -59,6 +59,21 @@
    docker-compose up -d --build
    ```
 
+   ejecutar curl para creación de usuario:
+
+   ´´´json
+    curl --location 'localhost:8080/auth/register' \
+    --header 'Content-Type: application/json' \
+    --header 'Cookie: JSESSIONID=2D497285FFEF61CBF219C43E40F41757' \
+    --data-raw '{
+        "name": "Juan",
+        "email": "jablo1115@hotmail.com",
+        "password": "password",
+        "role": "PM",
+        "status": "APPROVED"
+    }'
+   ´´´
+
 3. **Servicios disponibles**:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8080
