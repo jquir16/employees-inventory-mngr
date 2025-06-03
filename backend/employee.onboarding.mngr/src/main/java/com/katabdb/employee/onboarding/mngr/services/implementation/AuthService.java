@@ -17,6 +17,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -24,6 +25,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuthService implements IAuthQueryService {
+
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final int BEARER_PREFIX_LENGTH = BEARER_PREFIX.length();
+
     private final IAuthRepository authRepository;
     private final IUserRepository userRepository;
     private final JWTService jwtService;
@@ -32,62 +37,88 @@ public class AuthService implements IAuthQueryService {
 
     @Override
     public TokenResponse register(RegisterUserRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new UserAlreadyExistsException("User already exists");
-        }
-        var savedUser = userRepository.save(buildUserFromRequest(request));
-        var jwtToken = jwtService.generateToken(savedUser);
-        var refreshToken = jwtService.generateRefreshToken(savedUser);
-        var token = buildTokenForUser(savedUser, jwtToken);
-        authRepository.save(token);
-        return new TokenResponse(jwtToken, refreshToken);
+        validateUserDoesNotExist(request.email());
+
+        UserEntity savedUser = saveNewUser(request);
+        return generateAndSaveTokens(savedUser);
     }
 
     @Override
     public TokenResponse login(LoginUserRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
-        var user = userRepository.findByEmail(request.email())
-                .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        revokeAllUserTokens(user);
-        var token = buildTokenForUser(user, jwtToken);
-        authRepository.save(token);
-        return new TokenResponse(jwtToken, refreshToken);
+        authenticateUser(request.email(), request.password());
+
+        UserEntity user = findUserByEmail(request.email());
+        revokeAllActiveTokens(user);
+
+        return generateAndSaveTokens(user);
     }
 
     @Override
-    public TokenResponse refreshToken(String header) {
-        if (header == null || !header.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Invalid Bearer Token");
+    public TokenResponse refreshToken(String authHeader) {
+        validateAuthHeader(authHeader);
+
+        String refreshToken = extractTokenFromHeader(authHeader);
+        String userEmail = jwtService.extractEmail(refreshToken);
+
+        UserEntity user = findUserByEmail(userEmail);
+        validateRefreshToken(refreshToken, user);
+
+        revokeAllActiveTokens(user);
+        return generateNewAccessToken(user, refreshToken);
+    }
+
+    private void validateUserDoesNotExist(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new UserAlreadyExistsException("User already exists");
         }
-        final String refreshToken = header.substring(7);
-        final String userEmail = jwtService.extractEmail(refreshToken);
+    }
 
-        if (userEmail == null) {
-            throw new IllegalArgumentException("Invalid refresh token");
-        }
+    private UserEntity saveNewUser(RegisterUserRequest request) {
+        return userRepository.save(buildUserFromRequest(request));
+    }
 
-        final UserEntity user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException(userEmail));
+    private TokenResponse generateAndSaveTokens(UserEntity user) {
+        String jwtToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
-        if (!jwtService.isTokenValid(refreshToken, user)) {
-            throw new IllegalArgumentException("Invalid refresh token");
-        }
-
-        final String jwtToken = jwtService.generateToken(user);
-        revokeAllUserTokens(user);
-        var token = buildTokenForUser(user, jwtToken);
-        authRepository.save(token);
+        saveTokenForUser(user, jwtToken);
         return new TokenResponse(jwtToken, refreshToken);
     }
 
-    public UserEntity buildUserFromRequest(RegisterUserRequest request) {
+    private void authenticateUser(String email, String password) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+        );
+    }
+
+    private UserEntity findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
+    }
+
+    private void validateAuthHeader(String authHeader) {
+        if (!StringUtils.hasText(authHeader) || !authHeader.startsWith(BEARER_PREFIX)) {
+            throw new IllegalArgumentException("Invalid Bearer Token");
+        }
+    }
+
+    private String extractTokenFromHeader(String authHeader) {
+        return authHeader.substring(BEARER_PREFIX_LENGTH);
+    }
+
+    private void validateRefreshToken(String refreshToken, UserEntity user) {
+        if (!jwtService.isTokenValid(refreshToken, user)) {
+            throw new IllegalArgumentException("Invalid refresh token");
+        }
+    }
+
+    private TokenResponse generateNewAccessToken(UserEntity user, String refreshToken) {
+        String jwtToken = jwtService.generateToken(user);
+        saveTokenForUser(user, jwtToken);
+        return new TokenResponse(jwtToken, refreshToken);
+    }
+
+    private UserEntity buildUserFromRequest(RegisterUserRequest request) {
         return UserEntity.builder()
                 .name(request.name())
                 .email(request.email())
@@ -96,6 +127,11 @@ public class AuthService implements IAuthQueryService {
                 .status(request.status())
                 .createdAt(new Date())
                 .build();
+    }
+
+    private void saveTokenForUser(UserEntity user, String jwtToken) {
+        TokenEntity token = buildTokenForUser(user, jwtToken);
+        authRepository.save(token);
     }
 
     private TokenEntity buildTokenForUser(UserEntity user, String jwtToken) {
@@ -107,15 +143,12 @@ public class AuthService implements IAuthQueryService {
                 .build();
     }
 
-    private void revokeAllUserTokens(final UserEntity user) {
-        final List<TokenEntity> validUserTokens = authRepository
-                .findAllByTokenStatus(TokenStatus.ACTIVE);
-        if (!validUserTokens.isEmpty()) {
-            for (final TokenEntity token : validUserTokens) {
-                token.setTokenStatus(TokenStatus.REVOKED);
-                token.setTokenStatus(TokenStatus.REVOKED);
-            }
-            authRepository.saveAll(validUserTokens);
+    private void revokeAllActiveTokens(UserEntity user) {
+        List<TokenEntity> activeTokens = authRepository.findAllByTokenStatus(TokenStatus.ACTIVE);
+
+        if (!activeTokens.isEmpty()) {
+            activeTokens.forEach(token -> token.setTokenStatus(TokenStatus.REVOKED));
+            authRepository.saveAll(activeTokens);
         }
     }
 }
