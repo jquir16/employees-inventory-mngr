@@ -44,6 +44,9 @@ public class AccessRequestController {
             @PathVariable Integer id,
             @RequestBody @Validated AccessRequestsRequest accessRequestsRequest) {
         AccessRequestsResponse updated = accessRequestsQueryService.updateAccessRequest(id, accessRequestsRequest);
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(updated);
     }
 

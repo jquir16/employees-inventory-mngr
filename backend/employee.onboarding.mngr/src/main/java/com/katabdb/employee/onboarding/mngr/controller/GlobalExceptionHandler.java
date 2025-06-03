@@ -11,83 +11,86 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.LocalDateTime;
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler({InvalidCredentialsException.class, BadCredentialsException.class})
+    public ResponseEntity<ApiError> handleUnauthorizedExceptions(RuntimeException ex) {
+        logAndGetMessage(HttpStatus.UNAUTHORIZED, ex);
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleUserExists(UserAlreadyExistsException ex) {
-        logger.warn("409 Conflict: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ApiError(HttpStatus.CONFLICT.value(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException ex) {
-        logger.warn("401 Unauthorized: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex) {
-        logger.warn("401 Unauthorized: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage()));
+        logAndGetMessage(HttpStatus.CONFLICT, ex);
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException ex) {
-        String errorMsg = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
+                .map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
                 .orElse("Validation error");
-        logger.warn("400 Bad Request: {}", errorMsg);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(HttpStatus.BAD_REQUEST.value(), errorMsg));
+
+        logAndGetMessage(HttpStatus.BAD_REQUEST, errorMessage);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, errorMessage);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadable() {
+        String message = "Bad formatted body or request";
+        logAndGetMessage(HttpStatus.BAD_REQUEST, message);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        String message = String.format("The method %s is not implemented on this endpoint", ex.getMethod());
+        logAndGetMessage(HttpStatus.METHOD_NOT_ALLOWED, message);
+        return buildErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, message);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = extractDataIntegrityErrorMessage(ex);
+        logAndGetMessage(HttpStatus.BAD_REQUEST, message);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralError(Exception ex) {
         logger.error("500 Internal Server Error: ", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected error"));
+        return buildErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unexpected error"
+        );
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiError> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
-        String message = "Bad formatted body or request";
-        logger.warn("400 Bad Request: {}", message);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(HttpStatus.BAD_REQUEST.value(), message));
-    }
-
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ApiError> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        String message = "The method " + ex.getMethod() + " is not implemented on this endpoint";
-        logger.warn("405 Method Not Allowed: {}", message);
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(new ApiError(HttpStatus.METHOD_NOT_ALLOWED.value(), message));
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        String message = "Error de integridad de datos";
-
+    private String extractDataIntegrityErrorMessage(DataIntegrityViolationException ex) {
         if (ex.getCause() instanceof PropertyValueException) {
             PropertyValueException pve = (PropertyValueException) ex.getCause();
-            message = "Campo requerido no proporcionado: " + pve.getPropertyName();
+            return String.format("Campo requerido no proporcionado: %s", pve.getPropertyName());
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(HttpStatus.BAD_REQUEST.value(), message));
+        return "Error de integridad de datos";
+    }
+
+    private void logAndGetMessage(HttpStatus status, Exception ex) {
+        logger.warn("{} {}: {}", status.value(), status.getReasonPhrase(), ex.getMessage());
+    }
+
+    private void logAndGetMessage(HttpStatus status, String message) {
+        logger.warn("{} {}: {}", status.value(), status.getReasonPhrase(), message);
+    }
+
+    private ResponseEntity<ApiError> buildErrorResponse(HttpStatus status, String message) {
+        return ResponseEntity.status(status)
+                .body(new ApiError(status.value(), message));
     }
 }

@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface IUserQueryService {
     UserResponse getUserById(Integer id);
     List<UserResponse> getAllUsers();
-    Boolean existsByEmail(String email);
+    boolean existsByEmail(String email);
     Optional<UserResponse> findByEmail(String email);
     UserResponse updateUser(Integer id, UserUpdateRequest user);
 }
