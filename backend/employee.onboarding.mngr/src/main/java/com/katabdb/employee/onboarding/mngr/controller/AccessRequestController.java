@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/access-requests")
@@ -44,5 +45,10 @@ public class AccessRequestController {
             @RequestBody @Validated AccessRequestsRequest accessRequestsRequest) {
         AccessRequestsResponse updated = accessRequestsQueryService.updateAccessRequest(id, accessRequestsRequest);
         return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/userId/{userId}")
+    public ResponseEntity<Optional<List<AccessRequestsResponse>>> getByUserId(@Validated @PathVariable Integer userId) {
+        return ResponseEntity.ok(accessRequestsQueryService.getRequestsByUser(userId));
     }
 }

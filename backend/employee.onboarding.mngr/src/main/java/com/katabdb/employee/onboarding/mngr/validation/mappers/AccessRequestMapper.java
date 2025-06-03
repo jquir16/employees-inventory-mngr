@@ -14,6 +14,7 @@ public class AccessRequestMapper {
                 .userId(accessRequestEntity.getUser() !=null ? accessRequestEntity.getUser().getId(): null)
                 .systems(accessRequestEntity.getSystems())
                 .status(accessRequestEntity.getStatus())
+                .createdAt(accessRequestEntity.getRequestedAt())
                 .build();
     }
 
