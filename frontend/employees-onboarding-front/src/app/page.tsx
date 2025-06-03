@@ -1,8 +1,5 @@
-import Image from "next/image";
-import LoginFormComponent from "../features/auth/components/loginFormComponent";
+import { redirect } from 'next/navigation'
 
-export default function Home() {
-  return (
-    <LoginFormComponent/>
-  );
+export default function HomePage() {
+  redirect('/public/login')
 }

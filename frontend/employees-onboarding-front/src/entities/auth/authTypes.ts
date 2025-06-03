@@ -4,6 +4,6 @@ export interface LoginFormValues {
 }
 
 export interface AuthResponse {
-  token: string
-  refreshToken: string
+  access_token: string
+  refresh_token: string
 }

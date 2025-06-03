@@ -24,20 +24,20 @@ export const metadata: Metadata = {
   description: 'Sistema de gestión de nuevos colaboradores',
 };
 
-export default function RootLayout({
+export default function ProtectedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className={inter.className}>
-        <ReactQueryProvider>
-          {children}
-          <Toaster position="bottom-right" />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </ReactQueryProvider>
-      </body>
-    </html>
+      <html lang="es">
+        <body className={inter.className}>
+          <ReactQueryProvider>
+            {children}
+            <Toaster position="bottom-right" />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ReactQueryProvider>
+        </body>
+      </html>
   );
 }

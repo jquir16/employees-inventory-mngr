@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  source: '/:path*',
+  Headers: [
+    {
+      key: 'x-middleware-request-headers',
+      value: 'cookie',
+    },
+  ],
+}
 
 export default nextConfig;

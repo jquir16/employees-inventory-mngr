@@ -4,15 +4,18 @@ import { useRouter } from 'next/navigation'
 import { useLogin } from '../hooks/loginHook'
 import { toast } from 'react-hot-toast'
 import getLoginErrorMessage from '../lib/getLoginErrorMessages'
+import { useAuthStore } from './authStore'
+import { useUser } from '@/features/user-management/hooks/usersHook'
 
 export const useLoginForm = () => {
     const router = useRouter()
+    const loginStore = useAuthStore(state => state.login)
     const { mutate: login, isPending } = useLogin({
         onSuccess: (data) => {
-            localStorage.setItem('token', data.token)
-            localStorage.setItem('refreshToken', data.refreshToken)
+            document.cookie = `auth-token=${data.access_token}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`
+            loginStore(data.access_token)
             toast.success('¡Bienvenido!', { duration: 6000 })
-            router.push('/dashboard')
+            router.push('/protected/dashboard')
         },
         onError: (error) => {
             toast.error(getLoginErrorMessage(error), { duration: 7000 })

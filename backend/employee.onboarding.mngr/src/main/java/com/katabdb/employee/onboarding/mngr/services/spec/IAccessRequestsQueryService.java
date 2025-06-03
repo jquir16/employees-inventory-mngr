@@ -11,5 +11,5 @@ public interface IAccessRequestsQueryService {
     List<AccessRequestsResponse> getAllAccessRequests();
     AccessRequestsResponse createAccessRequest(AccessRequestsRequest accessRequestsRequest);
     AccessRequestsResponse updateAccessRequest(Integer id, AccessRequestsRequest accessRequestsRequest);
-    Optional<List<AccessRequestsResponse>> getRequestsByUser(Integer id);
+    Optional<List<AccessRequestsResponse>> getRequestsByUser(Integer userId);
 }

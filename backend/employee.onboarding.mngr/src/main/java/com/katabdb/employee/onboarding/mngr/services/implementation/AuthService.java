@@ -93,6 +93,7 @@ public class AuthService implements IAuthQueryService {
                 .email(request.email())
                 .password(passwordService.encodePassword(request.password()))
                 .role(request.role())
+                .status(request.status())
                 .createdAt(new Date())
                 .build();
     }
