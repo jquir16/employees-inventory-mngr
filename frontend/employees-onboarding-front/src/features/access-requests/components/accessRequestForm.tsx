@@ -34,7 +34,6 @@ export function AccessRequestForm() {
                     error={formik.errors.userId}
                     touched={formik.touched.userId}
                     className={isDevOrQA ? 'bg-gray-100 cursor-not-allowed' : ''}
-                    placeholder="(solo para editar)"
                 />
 
                 {}
