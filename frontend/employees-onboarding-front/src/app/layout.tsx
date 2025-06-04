@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from 'next/font/google'
-import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import ReactQueryProvider from "./provider";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'

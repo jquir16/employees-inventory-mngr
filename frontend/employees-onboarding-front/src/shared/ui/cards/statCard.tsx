@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import { ArrowUp, ArrowDown, TrendingUp } from 'lucide-react'
+import { ArrowUp, ArrowDown } from 'lucide-react'
 
 const statCardVariants = cva(
   'border rounded-lg p-6 shadow-sm',
