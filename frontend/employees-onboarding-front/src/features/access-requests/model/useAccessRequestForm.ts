@@ -25,45 +25,77 @@ type UseAccessRequestFormReturn = {
 export const useAccessRequestForm = (): UseAccessRequestFormReturn => {
     const user = useAuthStore(state => state.user);
     const queryClient = useQueryClient();
-    
+
     const { id: userId = 0, role } = user || {};
     const isPM = role === 'PM';
 
-    const { data: allRequests } = useAccessRequestsData(isPM, userId);
-    
-    const formik: any = useFormik<AccessRequestCreate>({
-        initialValues: getInitialValues(isPM, userId),
-        validationSchema: getValidationSchema(),
-        onSubmit: (values) => handleSubmit(values, isPM, userId, existingRequest, updateRequest, createRequest),
+    const { data: allRequests } = isPM ? useAccessRequests() : useUserAccessRequests(userId);
+
+    const formik = useFormik<AccessRequestCreate>({
+        initialValues: {
+            userId: isPM ? 0 : userId,
+            systems: [],
+            status: 'PENDING',
+        },
+        validationSchema: Yup.object({
+            userId: Yup.number()
+                .required('El ID de usuario es requerido')
+                .positive('El ID debe ser un número positivo')
+                .integer('El ID debe ser un número entero'),
+            systems: Yup.array()
+                .of(Yup.string().oneOf(SYSTEM_OPTIONS.map(opt => opt.label)))
+                .min(1, 'Debes seleccionar al menos un sistema')
+                .required('Se requiere al menos un sistema'),
+        }),
+        onSubmit: (values) => {
+            const data: AccessRequestCreate = {
+                userId: isPM ? Number(values.userId) : userId,
+                systems: values.systems,
+                status: 'PENDING',
+            };
+
+            existingRequest
+                ? updateRequest({ id: existingRequest.id, data })
+                : createRequest(data);
+        }
     });
 
-    const existingRequest = useMemo(() => 
-        findExistingRequest(allRequests, isPM, formik.values.userId, userId),
-        [allRequests, formik.values.userId, userId, isPM]
+    const targetUserId = isPM ? Number(formik.values.userId || 0) : Number(userId);
+    const existingRequest = useMemo(
+        () => findExistingRequest(allRequests, targetUserId),
+        [allRequests, targetUserId]
     );
 
     const { mutate: createRequest, isPending: isCreating } = useCreateAccessRequest({
         onSuccess: () => handleMutationSuccess(queryClient, formik, 'creada'),
-        onError: (error) => handleMutationError(error, 'crear')
+        onError: (error) => toast.error(`Error al crear solicitud: ${error.message}`)
     });
 
     const { mutate: updateRequest, isPending: isUpdating } = useUpdateAccessRequest({
         onSuccess: () => handleMutationSuccess(queryClient, formik, 'actualizada'),
-        onError: (error) => handleMutationError(error, 'actualizar')
+        onError: (error) => toast.error(`Error al actualizar solicitud: ${error.message}`)
     });
 
+    // Efecto para cargar los datos existentes cuando cambia el userId o se detecta una request existente
     useEffect(() => {
         if (existingRequest) {
-            formik.setFieldValue('systems', existingRequest.systems);
-        }
-    }, [existingRequest]);
-
-    useEffect(() => {
-        if (isPM) {
-            formik.setFieldValue('userId', '');
+            formik.setValues({
+                userId: existingRequest.userId,
+                systems: existingRequest.systems,
+                status: existingRequest.status,
+            });
+        } else if (isPM && formik.values.userId !== 0) {
+            // Si es PM y seleccionó un usuario, pero no hay request existente, resetear sistemas
             formik.setFieldValue('systems', []);
+        } else if (!isPM) {
+            // Si no es PM, mantener los valores del usuario actual
+            formik.setValues({
+                userId: userId,
+                systems: formik.values.systems,
+                status: 'PENDING',
+            });
         }
-    }, [userId]);
+    }, [existingRequest, isPM, userId, formik.values.userId]);
 
     return {
         formik,
@@ -73,64 +105,13 @@ export const useAccessRequestForm = (): UseAccessRequestFormReturn => {
     };
 };
 
-const useAccessRequestsData = (isPM: boolean, userId: number) => {
-    return isPM ? useAccessRequests() : useUserAccessRequests(userId);
-};
-
-const getInitialValues = (isPM: boolean, userId: number): AccessRequestCreate => ({
-    userId: isPM ? 0 : userId,
-    systems: [],
-    status: 'PENDING',
-});
-
-const getValidationSchema = () => Yup.object({
-    userId: Yup.number()
-        .required('El ID de usuario es requerido')
-        .positive('El ID debe ser un número positivo')
-        .integer('El ID debe ser un número entero'),
-    systems: Yup.array()
-        .of(Yup.string().oneOf(SYSTEM_OPTIONS.map(opt => opt.label)))
-        .min(1, 'Debes seleccionar al menos un sistema')
-        .required('Se requiere al menos un sistema'),
-});
-
 const findExistingRequest = (
-    allRequests: AccessRequestsResponse[] | undefined,
-    isPM: boolean,
-    formUserId: string | number,
-    userId: number
+    allRequests?: AccessRequestsResponse[],
+    targetUserId?: number
 ): AccessRequestsResponse | undefined => {
-    if (!allRequests) return undefined;
-    const targetUserId = isPM ? Number(formUserId) : userId;
-    
-    return allRequests.find(request => 
-        request.userId === targetUserId && request.status === 'PENDING'
+    return allRequests?.find(req =>
+        req.userId === targetUserId && req.status === 'PENDING'
     );
-};
-
-const handleSubmit = (
-    values: AccessRequestCreate,
-    isPM: boolean,
-    userId: number,
-    existingRequest: AccessRequestsResponse | undefined,
-    updateRequest: (params: { id: number; data: AccessRequestCreate }) => void,
-    createRequest: (data: AccessRequestCreate) => void
-) => {
-    const targetUserId = isPM ? Number(values.userId) : userId;
-    const requestData = {
-        userId: targetUserId,
-        systems: values.systems,
-        status: 'PENDING',
-    };
-
-    if (existingRequest) {
-        updateRequest({
-            id: existingRequest.id,
-            data: requestData
-        });
-    } else {
-        createRequest(requestData);
-    }
 };
 
 const handleMutationSuccess = (
@@ -141,8 +122,4 @@ const handleMutationSuccess = (
     queryClient.invalidateQueries({ queryKey: accessRequestKeys.all });
     toast.success(`Solicitud de acceso ${action} exitosamente`);
     formik.resetForm();
-};
-
-const handleMutationError = (error: Error, action: string) => {
-    toast.error(`Error al ${action} solicitud: ${error.message}`);
 };
