@@ -5,7 +5,6 @@ import { useLogin } from '../hooks/loginHook'
 import { toast } from 'react-hot-toast'
 import getLoginErrorMessage from '../lib/getLoginErrorMessages'
 import { useAuthStore } from './authStore'
-import { useUser } from '@/features/user-management/hooks/usersHook'
 
 export const useLoginForm = () => {
     const router = useRouter()

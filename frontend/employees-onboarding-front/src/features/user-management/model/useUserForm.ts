@@ -7,7 +7,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useEffect, useMemo } from 'react';
 import { CreateUserRequest, UpdateUserRequest, UserResponse, UserRole, UserStatus } from '@/entities/user/userTypes';
-import { AuthResponse } from '@/entities/auth/authTypes';
 import { useUsers, useRegisterUser, userKeys, useUpdateUser } from '../hooks/usersHook';
 
 export const useUserForm = () => {
