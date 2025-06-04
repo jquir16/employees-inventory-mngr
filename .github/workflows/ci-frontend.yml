@@ -20,19 +20,19 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      working-directory: ./frontend
+      working-directory: ./frontend/employees-onboarding-front
       run: npm install
       
     - name: Run linter
-      working-directory: ./frontend
+      working-directory: ./frontend/employees-onboarding-front
       run: npm run lint
       
     - name: Build project
-      working-directory: ./frontend
+      working-directory: ./frontend/employees-onboarding-front
       run: npm run build
       
     - name: Run tests
-      working-directory: ./frontend
+      working-directory: ./frontend/employees-onboarding-front
       run: npm test
       env:
         CI: true
