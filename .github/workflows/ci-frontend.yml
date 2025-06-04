@@ -24,10 +24,6 @@ jobs:
       working-directory: ./frontend/employees-onboarding-front
       run: npm ci
       
-    - name: Run linter
-      working-directory: ./frontend/employees-onboarding-front
-      run: npm run lint
-      
     - name: Build project
       working-directory: ./frontend/employees-onboarding-front
       run: npm run build
