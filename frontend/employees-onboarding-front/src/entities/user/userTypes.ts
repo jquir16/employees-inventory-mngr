@@ -5,10 +5,10 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: UserRole;
-  status: UserStatus;
-  createdAt: Date;
-  updated_at: Date;
+  role?: UserRole;
+  status?: UserStatus;
+  createdAt?: Date;
+  updated_at?: Date;
 }
 
 export interface CreateUserRequest {
