@@ -10,8 +10,6 @@ import { useAuthStore } from '@/features/auth/model/authStore'
 import { accessRequestStatusToColor, formatDate } from '../../../shared/lib/utils'
 import { useUser } from '@/features/user-management/hooks/usersHook'
 
-type UserRole = 'PM' | 'AC' | 'QA' | 'DEV'
-
 const STATUS_LABELS: Record<AccessRequestStatus, string> = {
     PENDING: 'Pendiente',
     APPROVED: 'Aprobado',

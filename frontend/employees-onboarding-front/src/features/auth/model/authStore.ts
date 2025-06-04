@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { jwtDecode } from 'jwt-decode';
-import { UserRole, UserStatus, User } from '@/entities/user/userTypes';
+import { User } from '@/entities/user/userTypes';
 import { AuthState, DecodedToken } from '@/entities/auth/authTypes';
 
 
