@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/features/auth/model/authStore";
-const axios = require('axios').default;
+import axios from 'axios';
 
 const axiosClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/',
