@@ -3,41 +3,60 @@
 import { SYSTEM_OPTIONS } from "@/entities/access-request/accessRequestTypes";
 import { useAccessRequestForm } from "../model/useAccessRequestForm";
 import { useAuthStore } from "@/features/auth/model/authStore";
+import { useUsers } from "@/features/user-management/hooks/usersHook";
 import InputField from "@/shared/ui/form/inputField";
 import LoadingButton from "@/shared/ui/form/loadingButton";
 
 export function AccessRequestForm() {
-    const { formik, isPending } = useAccessRequestForm();
+    const { formik, isPending, existingRequest, isPM } = useAccessRequestForm();
     const user = useAuthStore(state => state.user);
+    const { data: users = [] } = useUsers();
     const isDevOrQA = user?.role === 'DEV' || user?.role === 'QA';
 
     const handleSystemChange = (systemId: string) => {
-        const currentSystems = formik.values.systems
+        const currentSystems = formik.values.systems;
         const newSystems = currentSystems.includes(systemId)
             ? currentSystems.filter(id => id !== systemId)
-            : [...currentSystems, systemId]
+            : [...currentSystems, systemId];
 
-        formik.setFieldValue('systems', newSystems)
-    }
+        formik.setFieldValue('systems', newSystems);
+    };
+
+    const handleUserChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value === '' ? null : Number(e.target.value);
+        formik.setFieldValue('userId', value);
+    };
 
     return (
         <form onSubmit={formik.handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField
-                    id="userId"
-                    label="ID de Usuario *"
-                    type="number"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.userId}
-                    readOnly={isDevOrQA}
-                    error={formik.errors.userId}
-                    touched={formik.touched.userId}
-                    className={isDevOrQA ? 'bg-gray-100 cursor-not-allowed' : ''}
-                />
-
-                {}
-            </div>
+            {/* Solo mostrar el campo de usuario para PM */}
+            {isPM && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-1">
+                            Usuario *
+                        </label>
+                        <select
+                            id="userId"
+                            name="userId"
+                            value={formik.values.userId ?? ''}
+                            onChange={handleUserChange}
+                            onBlur={formik.handleBlur}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        >
+                            <option value="">Seleccione un usuario</option>
+                            {users.map(user => (
+                                <option key={user.id} value={user.id}>
+                                    {user.name} ({user.role})
+                                </option>
+                            ))}
+                        </select>
+                        {formik.touched.userId && formik.errors.userId && (
+                            <p className="mt-1 text-sm text-red-600">{formik.errors.userId}</p>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <div>
                 <fieldset>
@@ -77,7 +96,7 @@ export function AccessRequestForm() {
                     loading={isPending}
                     disabled={!formik.isValid}
                 >
-                    {isPending ? 'Enviando...' : 'Enviar Solicitud'}
+                    {existingRequest ? 'Actualizar Solicitud' : 'Crear Solicitud'}
                 </LoadingButton>
             </div>
         </form>
